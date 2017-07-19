@@ -7,7 +7,6 @@
  * For more information, see the README file.
  */
 
-
 /*
  * Routines to execute other programs.
  * Necessarily very OS dependent.
@@ -30,18 +29,14 @@
 extern int screen_trashed;
 extern IFILE curr_ifile;
 
-
 #if HAVE_SYSTEM
 
 /*
  * Pass the specified command to a shell to be executed.
  * Like plain "system()", but handles resetting terminal modes, etc.
  */
-	public void
-lsystem(cmd, donemsg)
-	char *cmd;
-	char *donemsg;
-{
+public void lsystem(cmd, donemsg)
+	char *cmd;char *donemsg; {
 	register int inp;
 #if HAVE_SHELL
 	register char *shell;
@@ -58,8 +53,7 @@ lsystem(cmd, donemsg)
 	 */
 	if (cmd[0] == '-')
 		cmd++;
-	else
-	{
+	else {
 		clear_bot();
 		putstr("!");
 		putstr(cmd);
@@ -69,7 +63,7 @@ lsystem(cmd, donemsg)
 #if MSDOS_COMPILER
 #if MSDOS_COMPILER==WIN32C
 	if (*cmd == '\0')
-		cmd = getenv("COMSPEC");
+	cmd = getenv("COMSPEC");
 #else
 	/*
 	 * Working directory is global on MSDOS.
@@ -92,7 +86,7 @@ lsystem(cmd, donemsg)
 	 * De-initialize the terminal and take out of raw mode.
 	 */
 	deinit();
-	flush();	/* Make sure the deinit chars get out */
+	flush(); /* Make sure the deinit chars get out */
 	raw_mode(0);
 #if MSDOS_COMPILER==WIN32C
 	close_getchr();
@@ -128,15 +122,12 @@ lsystem(cmd, donemsg)
 	 */
 #if HAVE_SHELL
 	p = NULL;
-	if ((shell = lgetenv("SHELL")) != NULL && *shell != '\0')
-	{
+	if ((shell = lgetenv("SHELL")) != NULL && *shell != '\0') {
 		if (*cmd == '\0')
 			p = save(shell);
-		else
-		{
+		else {
 			char *esccmd = shell_quote(cmd);
-			if (esccmd != NULL)
-			{
+			if (esccmd != NULL) {
 				int len = strlen(shell) + strlen(esccmd) + 5;
 				p = (char *) ecalloc(len, sizeof(char));
 				SNPRINTF3(p, len, "%s %s %s", shell, shell_coption(), esccmd);
@@ -144,8 +135,7 @@ lsystem(cmd, donemsg)
 			}
 		}
 	}
-	if (p == NULL)
-	{
+	if (p == NULL) {
 		if (*cmd == '\0')
 			p = save("sh");
 		else
@@ -164,7 +154,7 @@ lsystem(cmd, donemsg)
 	 * also makes trouble with some DPMI servers).
 	 */
 	__djgpp_exception_toggle();
-  	system(cmd);
+	system(cmd);
 	__djgpp_exception_toggle();
 #else
 	system(cmd);
@@ -185,14 +175,13 @@ lsystem(cmd, donemsg)
 #endif
 	init_signals(1);
 	raw_mode(1);
-	if (donemsg != NULL)
-	{
-		putstr(donemsg);
-		putstr("  (press RETURN)");
-		get_return();
-		putchr('\n');
-		flush();
-	}
+//	if (donemsg != NULL) {
+//		putstr(donemsg);
+//		putstr("  (press RETURN)");
+//		get_return();
+//		putchr('\n');
+//		flush();
+//	}
 	init();
 	screen_trashed = 1;
 
@@ -210,9 +199,9 @@ lsystem(cmd, donemsg)
 	if (cwd[1] == ':')
 	{
 		if (cwd[0] >= 'a' && cwd[0] <= 'z')
-			setdisk(cwd[0] - 'a');
+		setdisk(cwd[0] - 'a');
 		else if (cwd[0] >= 'A' && cwd[0] <= 'Z')
-			setdisk(cwd[0] - 'A');
+		setdisk(cwd[0] - 'A');
 	}
 #endif
 #endif
@@ -249,11 +238,8 @@ lsystem(cmd, donemsg)
  * If the mark is on the current screen, or if the mark is ".",
  * the whole current screen is piped.
  */
-	public int
-pipe_mark(c, cmd)
-	int c;
-	char *cmd;
-{
+public int pipe_mark(c, cmd)
+	int c;char *cmd; {
 	POSITION mpos, tpos, bpos;
 
 	/*
@@ -269,26 +255,22 @@ pipe_mark(c, cmd)
 		tpos = ch_zero();
 	bpos = position(BOTTOM);
 
- 	if (c == '.') 
- 		return (pipe_data(cmd, tpos, bpos));
- 	else if (mpos <= tpos)
- 		return (pipe_data(cmd, mpos, bpos));
- 	else if (bpos == NULL_POSITION)
- 		return (pipe_data(cmd, tpos, bpos));
- 	else
- 		return (pipe_data(cmd, tpos, mpos));
+	if (c == '.')
+		return (pipe_data(cmd, tpos, bpos));
+	else if (mpos <= tpos)
+		return (pipe_data(cmd, mpos, bpos));
+	else if (bpos == NULL_POSITION)
+		return (pipe_data(cmd, tpos, bpos));
+	else
+		return (pipe_data(cmd, tpos, mpos));
 }
 
 /*
  * Create a pipe to the given shell command.
  * Feed it the file contents between the positions spos and epos.
  */
-	public int
-pipe_data(cmd, spos, epos)
-	char *cmd;
-	POSITION spos;
-	POSITION epos;
-{
+public int pipe_data(cmd, spos, epos)
+	char *cmd;POSITION spos;POSITION epos; {
 	register FILE *f;
 	register int c;
 	extern FILE *popen();
@@ -299,14 +281,12 @@ pipe_data(cmd, spos, epos)
 	 * to perform the necessary deinitialization before running
 	 * the command, and reinitialization after it.
 	 */
-	if (ch_seek(spos) != 0)
-	{
+	if (ch_seek(spos) != 0) {
 		error("Cannot seek to start position", NULL_PARG);
 		return (-1);
 	}
 
-	if ((f = popen(cmd, "w")) == NULL)
-	{
+	if ((f = popen(cmd, "w")) == NULL) {
 		error("Cannot create pipe", NULL_PARG);
 		return (-1);
 	}
@@ -327,8 +307,7 @@ pipe_data(cmd, spos, epos)
 #endif
 
 	c = EOI;
-	while (epos == NULL_POSITION || spos++ <= epos)
-	{
+	while (epos == NULL_POSITION || spos++ <= epos) {
 		/*
 		 * Read a character from the file and give it to the pipe.
 		 */
@@ -342,14 +321,13 @@ pipe_data(cmd, spos, epos)
 	/*
 	 * Finish up the last line.
 	 */
- 	while (c != '\n' && c != EOI ) 
- 	{
- 		c = ch_forw_get();
- 		if (c == EOI)
- 			break;
- 		if (putc(c, f) == EOF)
- 			break;
- 	}
+	while (c != '\n' && c != EOI) {
+		c = ch_forw_get();
+		if (c == EOI)
+			break;
+		if (putc(c, f) == EOF)
+			break;
+	}
 
 	pclose(f);
 
